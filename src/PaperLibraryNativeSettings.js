@@ -6,7 +6,7 @@ var MNPLSettings = (function () {
   }
   function show(c) {
     MNPLOptions.close(c);
-    if (!c.mnplSettingsPage) c.mnplSettingsPage = MNPLUI.box(c.view, MNPLUI.rect(0, 0, c.view.bounds.width, c.view.bounds.height), "paper");
+    if (!c.mnplSettingsPage) c.mnplSettingsPage = MNPLUI.box(c.mnplSurface, MNPLUI.rect(0, 0, c.mnplSurface.bounds.width, c.mnplSurface.bounds.height), "paper");
     c.mnplSettingsOpen = true;
     c.mnplSettingsMode = "settings";
     render(c);
@@ -22,7 +22,7 @@ var MNPLSettings = (function () {
   function render(c) {
     const page = c.mnplSettingsPage;
     if (!page) return;
-    const ui = MNPLUI, width = c.view.bounds.width, height = c.view.bounds.height;
+    const ui = MNPLUI, width = c.mnplSurface.bounds.width, height = c.mnplSurface.bounds.height;
     const offset = c.mnplSettingsScroll ? c.mnplSettingsScroll.contentOffset : null;
     const keyDraft = c.mnplSettingsMode === "key" && c.mnplKeyField ? c.mnplKeyField.text : "";
     page.frame = ui.rect(0, 0, width, height);
@@ -155,7 +155,7 @@ var MNPLSettings = (function () {
   }
   function layout(c) {
     if (!c.mnplSettingsPage) return;
-    if (c.mnplSettingsPage.frame.width !== c.view.bounds.width || c.mnplSettingsPage.frame.height !== c.view.bounds.height) render(c);
+    if (c.mnplSettingsPage.frame.width !== c.mnplSurface.bounds.width || c.mnplSettingsPage.frame.height !== c.mnplSurface.bounds.height) render(c);
   }
   return { show, close, render, choose, saveKey, layout, updateProgress };
 })();

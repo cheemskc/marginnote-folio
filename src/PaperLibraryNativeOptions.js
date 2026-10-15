@@ -9,8 +9,8 @@ var MNPLOptions = (function () {
     const anchor = kind === "sort" ? c.mnplSortButton : c.mnplFilterButton;
     const width = anchor.frame.width, x = anchor.frame.x, y = anchor.frame.y + anchor.frame.height + 4;
     const footer = kind === "filter" ? 34 : 0;
-    const height = Math.min(options.length * 34 + footer + 8, c.view.bounds.height - y - 12);
-    const menu = ui.box(c.view, ui.rect(x, y, width, height), "paper");
+    const height = Math.min(options.length * 34 + footer + 8, c.mnplSurface.bounds.height - y - 12);
+    const menu = ui.box(c.mnplSurface, ui.rect(x, y, width, height), "paper");
     menu.layer.borderWidth = 1; menu.layer.borderColor = ui.color(ui.colors.line); menu.layer.cornerRadius = 7;
     const scrollHeight = Math.max(30, height - footer - 8);
     const scroll = new UIScrollView(ui.rect(0, 4, width, scrollHeight)); menu.addSubview(scroll);
@@ -31,7 +31,7 @@ var MNPLOptions = (function () {
       const done = ui.control(menu, "完成", ui.rect(4, height - 37, width - 8, 31), c, "closeOptions");
       done.backgroundColor = ui.color(ui.colors.selected);
     }
-    c.mnplMenu = menu; c.mnplMenuWidth = c.view.bounds.width;
+    c.mnplMenu = menu; c.mnplMenuWidth = c.mnplSurface.bounds.width;
   }
   return { show, close };
 })();

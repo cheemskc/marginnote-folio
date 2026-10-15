@@ -33,7 +33,7 @@ function host() {
   const context = vm.createContext({ console, UIImageView: View, UIImage: { imageWithContentsOfFile: p => p }, UIView: View, UILabel: View, UIButton: Button, UIScrollView: View, UITextView: View, UITextField: View, UISearchBar: View, UITableView: View,
     UIPanGestureRecognizer: class { constructor(target, action) { this.target=target; this.action=action; } },
     UITableViewCell: { makeWithStyleReuseIdentifier: () => ({ contentView: new View(), textLabel: new View() }) },
-    UIColor: { colorWithRedGreenBlueAlpha: (...args) => args }, UIFont: { systemFontOfSize: n => n, boldSystemFontOfSize: n => n },
+    UIColor: { whiteColor: () => [1,1,1,1], clearColor: () => [0,0,0,0], colorWithRedGreenBlueAlpha: (...args) => args }, UIFont: { systemFontOfSize: n => n, boldSystemFontOfSize: n => n },
     MNPLNativeValues: { toArray: a => a },
     NSIndexPath: { indexPathForRowInSection: (row,section) => ({row,section}) },
     NSTimer: { scheduledTimerWithTimeInterval: (_, __, action) => timers.push(action) },
@@ -396,31 +396,24 @@ test('panel remains opaque and inset in tablet, portrait and split-view windows'
     assert.equal(f.x * 2 + f.width, width);
     assert.equal(f.y * 2 + f.height, height);
     assert.equal(h.c.view.alpha, 1);
-    assert.deepEqual(Array.from(h.c.view.backgroundColor), [1, 1, 1, 1]);
+    assert.deepEqual(Array.from(h.c.mnplSurface.backgroundColor), [1, 1, 1, 1]);
   }
   assert.deepEqual(h.alerts, []);
 });
 
 
-test('panel is outside the fading study subtree and stays in its own scene window', () => {
-  const h = host();
-  const window = new h.context.UIView({ x: 0, y: 0, width: 1024, height: 1366 });
-  window.alpha = 1;
-  window.addSubview(h.study.view); h.study.view.window = window;
-  h.study.view.alpha = 0.2;
-  h.panel.toggle(h.c);
-  assert.equal(h.c.view.superview, window);
-  assert.ok(!h.study.view.subviews.includes(h.c.view));
-  assert.equal(h.c.view.alpha * h.c.view.superview.alpha, 1);
-  assert.equal(h.study.view.alpha, 0.2);
-  h.study.view.alpha = 0; h.panel.layout(h.c);
-  assert.equal(h.c.view.alpha * h.c.view.superview.alpha, 1);
-  window.frame = { x: 0, y: 0, width: 1366, height: 1024 };
+test('content has an independent solid container for host-managed root appearance', () => {
+  const h = host(); h.panel.toggle(h.c); h.timers.shift()();
+  assert.equal(h.c.view.superview, h.study.view);
+  assert.equal(h.c.view.subviews.length, 1);
+  assert.equal(h.c.mnplHeading.superview, h.c.mnplSurface);
+  h.c.view.backgroundColor = null;
   h.panel.layout(h.c);
-  assert.equal(h.c.view.frame.x * 2 + h.c.view.frame.width, 1366);
+  assert.deepEqual(Array.from(h.c.mnplSurface.backgroundColor), [1,1,1,1]);
+  assert.equal(h.c.mnplSurface.frame.width, h.c.view.bounds.width);
+  h.c.openSettings();
+  assert.equal(h.c.mnplSettingsPage.superview, h.c.mnplSurface);
   h.panel.toggle(h.c);
-  assert.ok(!window.subviews.includes(h.c.view));
-  h.panel.toggle(h.c); h.panel.dispose(h.c);
-  assert.ok(!window.subviews.includes(h.c.view));
+  assert.equal(h.c.view.superview, null);
   assert.deepEqual(h.alerts, []);
 });

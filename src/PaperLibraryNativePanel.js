@@ -210,6 +210,7 @@ var MNPLPanel = (function () {
   function layoutContent(controller) {
     if (!controller.mnplReady) return;
     const ui = MNPLUI, width = controller.view.bounds.width, height = controller.view.bounds.height;
+    controller.mnplSurface.frame = ui.rect(0, 0, width, height);
     const wide = width >= 850, compact = width < 760;
     const folderVisible = wide && !controller.mnplHideFolders;
     const detailVisible = compact ? controller.mnplMobileSection === "detail" : !controller.mnplHideDetail;
@@ -269,19 +270,25 @@ var MNPLPanel = (function () {
   const panelClass = JSB.defineClass("MNPLNativePanelController : UIViewController <UITableViewDataSource, UITableViewDelegate, UISearchBarDelegate, UITextFieldDelegate>", {
     viewDidLoad: function () {
       const c = self, ui = MNPLUI;
-      c.view.backgroundColor = ui.color(ui.colors.paper);
+      // Separate the host-managed controller root from our solid content surface.
+      c.view.backgroundColor = UIColor.clearColor();
+      c.view.autoresizingMask = 0;
       c.view.alpha = 1;
-      c.view.layer.cornerRadius = 10;
-      c.view.layer.masksToBounds = true;
-      c.view.layer.borderWidth = 1;
-      c.view.layer.borderColor = ui.color(ui.colors.line);
-      c.mnplHeading = ui.label(c.view, "Folio", ui.rect(18, 10, 200, 32), 20, "ink", true);
-      c.mnplDetailButton = ui.button(c.view, "收起详情", ui.rect(0, 0, 75, 32), c, "toggleDetail");
-      c.mnplCurrentButton = ui.button(c.view, "定位当前", ui.rect(0, 0, 90, 32), c, "showCurrent");
-      c.mnplRefreshButton = ui.button(c.view, "刷新", ui.rect(0, 0, 54, 32), c, "refreshLibrary");
-      c.mnplSettingsButton = ui.button(c.view, "设置", ui.rect(0, 0, 54, 32), c, "openSettings");
-      c.mnplCloseButton = ui.button(c.view, "关闭", ui.rect(0, 0, 46, 32), c, "closeLibrary");
-      c.mnplFolderButton = ui.button(c.view, "收起目录", ui.rect(0, 0, 76, 36), c, "toggleFolders");
+      c.mnplSurface = new UIView(ui.rect(0, 0, c.view.bounds.width, c.view.bounds.height));
+      c.mnplSurface.backgroundColor = UIColor.whiteColor();
+      c.mnplSurface.autoresizingMask = (1 << 1 | 1 << 4);
+      c.mnplSurface.layer.cornerRadius = 10;
+      c.mnplSurface.layer.masksToBounds = true;
+      c.mnplSurface.layer.borderWidth = 1;
+      c.mnplSurface.layer.borderColor = ui.color(ui.colors.line);
+      c.view.addSubview(c.mnplSurface);
+      c.mnplHeading = ui.label(c.mnplSurface, "Folio", ui.rect(18, 10, 200, 32), 20, "ink", true);
+      c.mnplDetailButton = ui.button(c.mnplSurface, "收起详情", ui.rect(0, 0, 75, 32), c, "toggleDetail");
+      c.mnplCurrentButton = ui.button(c.mnplSurface, "定位当前", ui.rect(0, 0, 90, 32), c, "showCurrent");
+      c.mnplRefreshButton = ui.button(c.mnplSurface, "刷新", ui.rect(0, 0, 54, 32), c, "refreshLibrary");
+      c.mnplSettingsButton = ui.button(c.mnplSurface, "设置", ui.rect(0, 0, 54, 32), c, "openSettings");
+      c.mnplCloseButton = ui.button(c.mnplSurface, "关闭", ui.rect(0, 0, 46, 32), c, "closeLibrary");
+      c.mnplFolderButton = ui.button(c.mnplSurface, "收起目录", ui.rect(0, 0, 76, 36), c, "toggleFolders");
       c.mnplSearch = new UITextField(ui.rect(0, 0, 300, 40));
       c.mnplSearch.placeholder = "";
       c.mnplSearch.font = UIFont.systemFontOfSize(13);
@@ -297,17 +304,17 @@ var MNPLPanel = (function () {
       c.mnplSearch.addTargetActionForControlEvents(c, "searchChanged:", 1 << 17);
       c.mnplSearchPlaceholder = ui.label(c.mnplSearch, "搜索标题、作者、来源", ui.rect(12, 0, 255, 40), 13, "muted");
       c.mnplSearchPlaceholder.userInteractionEnabled = false;
-      c.view.addSubview(c.mnplSearch);
-      c.mnplFilterButton = ui.control(c.view, "筛选", ui.rect(0, 0, 132, 34), c, "filterPapers");
-      c.mnplSortButton = ui.control(c.view, "排序：年份", ui.rect(0, 0, 136, 34), c, "sortPapers");
-      c.mnplBackButton = ui.button(c.view, "返回列表", ui.rect(0, 0, 70, 36), c, "backToList");
+      c.mnplSurface.addSubview(c.mnplSearch);
+      c.mnplFilterButton = ui.control(c.mnplSurface, "筛选", ui.rect(0, 0, 132, 34), c, "filterPapers");
+      c.mnplSortButton = ui.control(c.mnplSurface, "排序：年份", ui.rect(0, 0, 136, 34), c, "sortPapers");
+      c.mnplBackButton = ui.button(c.mnplSurface, "返回列表", ui.rect(0, 0, 70, 36), c, "backToList");
       c.mnplPaperTable = new UITableView(ui.rect(0, 100, 450, 500));
       c.mnplPaperTable.tag = 1; c.mnplPaperTable.dataSource = c; c.mnplPaperTable.delegate = c;
       c.mnplPaperTable.rowHeight = 72; c.mnplPaperTable.separatorStyle = 0;
       c.mnplPaperTable.backgroundColor = ui.color(ui.colors.paper);
-      c.view.addSubview(c.mnplPaperTable);
-      c.mnplDetail = ui.box(c.view, ui.rect(450, 100, 320, 500), "sidebar");
-      c.mnplFolders = ui.box(c.view, ui.rect(0, 100, 205, 500), "sidebar");
+      c.mnplSurface.addSubview(c.mnplPaperTable);
+      c.mnplDetail = ui.box(c.mnplSurface, ui.rect(450, 100, 320, 500), "sidebar");
+      c.mnplFolders = ui.box(c.mnplSurface, ui.rect(0, 100, 205, 500), "sidebar");
       c.mnplFolders.layer.borderWidth = 1;
       c.mnplFolders.layer.borderColor = ui.color(ui.colors.line);
       c.mnplFolderTitle = ui.label(c.mnplFolders, "文献库目录", ui.rect(12, 8, 181, 24), 12, "ink", true);
@@ -316,10 +323,10 @@ var MNPLPanel = (function () {
       c.mnplFolderTable.rowHeight = 42; c.mnplFolderTable.separatorStyle = 0;
       c.mnplFolderTable.backgroundColor = ui.color(ui.colors.sidebar);
       c.mnplFolders.addSubview(c.mnplFolderTable);
-      c.mnplFolderDivider = ui.box(c.view, ui.rect(201, 100, 8, 500), "sidebar");
+      c.mnplFolderDivider = ui.box(c.mnplSurface, ui.rect(201, 100, 8, 500), "sidebar");
       c.mnplFolderDividerLine = ui.box(c.mnplFolderDivider, ui.rect(3, 0, 1, 500), "line");
       c.mnplFolderDivider.addGestureRecognizer(new UIPanGestureRecognizer(c, "resizeFolders:"));
-      c.mnplStatus = ui.label(c.view, "正在读取文献库…", ui.rect(14, 0, 600, 22), 11, "muted");
+      c.mnplStatus = ui.label(c.mnplSurface, "正在读取文献库…", ui.rect(14, 0, 600, 22), 11, "muted");
       updateToolbar(c);
       c.mnplReady = true;
       layoutContent(c);
@@ -550,7 +557,7 @@ var MNPLPanel = (function () {
     c.view.frame = MNPLUI.rect(bounds.x + (bounds.width - width) / 2, bounds.y + (bounds.height - height) / 2, width, height);
     // Reassert the surface after attachment / host layout on iPad.
     c.view.alpha = 1;
-    c.view.backgroundColor = MNPLUI.color(MNPLUI.colors.paper);
+    c.mnplSurface.backgroundColor = UIColor.whiteColor();
     layoutContent(c);
   }
   function toggle(c) {
@@ -558,11 +565,7 @@ var MNPLPanel = (function () {
     const study = studyFor(c);
     if (!study || !study.view) { Application.sharedInstance().alert("请先在 MarginNote 打开一个学习界面。"); return; }
     attempt(function () {
-      // Keep the panel outside the study subtree: immersive mode can fade
-      // that entire subtree, which child alpha/background overrides cannot undo.
-      // Use this study scene's window, never the application's global key window.
-      const host = study.view.window || study.view;
-      host.addSubview(c.view);
+      study.view.addSubview(c.view);
       c.mnplVisible = true;
       layout(c);
       // Present native controls before indexing the library. No WebView startup.
