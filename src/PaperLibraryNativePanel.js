@@ -270,11 +270,12 @@ var MNPLPanel = (function () {
     viewDidLoad: function () {
       const c = self, ui = MNPLUI;
       c.view.backgroundColor = ui.color(ui.colors.paper);
+      c.view.alpha = 1;
       c.view.layer.cornerRadius = 10;
       c.view.layer.masksToBounds = true;
       c.view.layer.borderWidth = 1;
       c.view.layer.borderColor = ui.color(ui.colors.line);
-      c.mnplHeading = ui.label(c.view, "文献库", ui.rect(18, 10, 200, 32), 20, "ink", true);
+      c.mnplHeading = ui.label(c.view, "Folio", ui.rect(18, 10, 200, 32), 20, "ink", true);
       c.mnplDetailButton = ui.button(c.view, "收起详情", ui.rect(0, 0, 75, 32), c, "toggleDetail");
       c.mnplCurrentButton = ui.button(c.view, "定位当前", ui.rect(0, 0, 90, 32), c, "showCurrent");
       c.mnplRefreshButton = ui.button(c.view, "刷新", ui.rect(0, 0, 54, 32), c, "refreshLibrary");
@@ -542,8 +543,14 @@ var MNPLPanel = (function () {
     const parent = c.view.superview;
     if (!parent) return;
     const bounds = parent.bounds;
-    const margin = bounds.width < 700 ? 6 : 18;
-    c.view.frame = MNPLUI.rect(bounds.x + margin, bounds.y + margin, bounds.width - margin * 2, bounds.height - margin * 2);
+    // Size against the current study window, including iPad Split View.
+    const margin = bounds.width < 600 ? 12 : 32;
+    const width = Math.max(0, Math.min(1120, bounds.width - margin * 2));
+    const height = Math.max(0, Math.min(820, bounds.height - margin * 2));
+    c.view.frame = MNPLUI.rect(bounds.x + (bounds.width - width) / 2, bounds.y + (bounds.height - height) / 2, width, height);
+    // Reassert the surface after attachment / host layout on iPad.
+    c.view.alpha = 1;
+    c.view.backgroundColor = MNPLUI.color(MNPLUI.colors.paper);
     layoutContent(c);
   }
   function toggle(c) {

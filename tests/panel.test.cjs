@@ -382,3 +382,21 @@ test('fetch abstract saves only the abstract and its attribution', async () => {
   assert.equal(h.saved[0].metadata.metrics.abstractSource, 'OpenAlex');
   assert.equal(h.docs[0].authors, 'Author A');
 });
+
+
+test('panel remains opaque and inset in tablet, portrait and split-view windows', () => {
+  const h = host(); h.panel.toggle(h.c);
+  for (const [width, height] of [[1366, 1024], [1024, 1366], [834, 1194], [507, 1024]]) {
+    h.study.view.frame = { x: 0, y: 0, width, height };
+    h.c.view.alpha = 0.5; h.c.view.backgroundColor = null;
+    h.panel.layout(h.c);
+    const f = h.c.view.frame;
+    assert.ok(f.x >= 12 && f.y >= 12);
+    assert.ok(f.width <= 1120 && f.height <= 820);
+    assert.equal(f.x * 2 + f.width, width);
+    assert.equal(f.y * 2 + f.height, height);
+    assert.equal(h.c.view.alpha, 1);
+    assert.deepEqual(Array.from(h.c.view.backgroundColor), [1, 1, 1, 1]);
+  }
+  assert.deepEqual(h.alerts, []);
+});

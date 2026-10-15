@@ -1,6 +1,6 @@
 {
-  "name": "marginnote-paper-library",
-  "version": "0.10.7",
+  "name": "marginnote-folio",
+  "version": "0.10.9",
   "private": true,
   "scripts": {
     "build": "node scripts/build.cjs",

@@ -5,7 +5,7 @@ const root = path.resolve(__dirname, "..");
 const output = path.join(root, "build");
 const packageDir = path.join(output, "package");
 const version = JSON.parse(fs.readFileSync(path.join(root, "src", "mnaddon.json"), "utf8")).version;
-const archive = path.join(output, `marginnote-paper-library-v${version}.mnaddon`);
+const archive = path.join(output, `marginnote-folio-v${version}.mnaddon`);
 execFileSync(process.execPath, [path.join(root, "scripts", "check.cjs")], { stdio: "inherit" });
 execFileSync(process.execPath, [path.join(root, "scripts", "build-icon.cjs")], { stdio: "inherit" });
 execFileSync(process.execPath, [path.join(root, "scripts", "build-type-icons.cjs")], { stdio: "inherit" });

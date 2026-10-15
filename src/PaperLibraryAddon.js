@@ -27,7 +27,7 @@ function createPaperLibraryAddon(mainPath) {
         checked: Boolean(self.panel && self.panel.mnplVisible) };
     },
     togglePaperLibrary: function () {
-      if (!self.panel) throw new Error("Paper Library 面板尚未初始化。");
+      if (!self.panel) throw new Error("Folio 面板尚未初始化。");
       MNPLPanel.toggle(self.panel);
       const study = Application.sharedInstance().studyController(self.window);
       if (study) study.refreshAddonCommands();

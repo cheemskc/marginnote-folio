@@ -1,10 +1,10 @@
-# Paper Library for MarginNote
+# Folio for MarginNote
 
-![Paper Library icon](assets/icon-a-44.png)
+![Folio icon](assets/icon-a-44.png)
 
-[下载最新安装包](https://github.com/cheemskc/marginnote-paper-library/releases/latest)
+[下载最新安装包](https://github.com/cheemskc/marginnote-folio/releases/latest)
 
-MarginNote 4 原生文献管理面板。当前版本 0.10.7；入口是学习界面的 Paper Library 工具栏按钮。安装包运行时不含网页、React 或 WebView。
+MarginNote 4 原生文献管理面板。当前版本 0.10.9；入口是学习界面的 Folio 工具栏按钮。安装包运行时不含网页、React 或 WebView。
 
 ## 使用
 
@@ -34,7 +34,7 @@ npm test
 npm run build
 ```
 
-安装包：`build/marginnote-paper-library-v0.10.7.mnaddon`。它只含原生脚本、图标和 manifest。`web/`、`legacy-web/` 是旧版参考源码，不参与安装。
+安装包：`build/marginnote-folio-v0.10.9.mnaddon`。它只含原生脚本、图标和 manifest。`web/`、`legacy-web/` 是旧版参考源码，不参与安装。
 
 ## 验证与限制
 
@@ -47,3 +47,5 @@ npm run build
 0.10.6：单篇点选、编辑保存、收藏及当前文献读取不加载 PDF 页数、不遍历学习集；仅明确点击打开时解析学习集关联。
 
 0.10.7：采用已选定的 A 文献叠页图标；透明高清原稿和 44 像素工具栏资源保存在 assets/，构建时直接复制。
+
+0.10.9：插件更名为 Folio；保留原插件标识和数据目录，可直接覆盖升级。
