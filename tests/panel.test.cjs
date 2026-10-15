@@ -6,7 +6,7 @@ const vm = require('node:vm');
 
 // Host doubles verify transitions and persistence contracts, not actual UIKit pixels.
 function host() {
-  const timers = [], alerts = [], saved = [], opened = [], openedSources = [], batchJobs = [];
+  const repeatingTimers = [], timers = [], alerts = [], saved = [], opened = [], openedSources = [], batchJobs = [];
   const journalSettings = { easyScholar: true, openAlex: true, easyScholarKey: '', openAlexKey: '' };
   let indexReads = 0, viewLoads = 0, resolveFolders;
   class View {
@@ -36,7 +36,11 @@ function host() {
     UIColor: { whiteColor: () => [1,1,1,1], clearColor: () => [0,0,0,0], colorWithRedGreenBlueAlpha: (...args) => args }, UIFont: { systemFontOfSize: n => n, boldSystemFontOfSize: n => n },
     MNPLNativeValues: { toArray: a => a },
     NSIndexPath: { indexPathForRowInSection: (row,section) => ({row,section}) },
-    NSTimer: { scheduledTimerWithTimeInterval: (_, __, action) => timers.push(action) },
+    NSTimer: { scheduledTimerWithTimeInterval: (_, repeats, action) => {
+      if (!repeats) return timers.push(action);
+      const timer = { action, valid: true, invalidate() { this.valid = false; } };
+      repeatingTimers.push(timer); return timer;
+    } },
     NSURL: { URLWithString: value => value },
     Application: { sharedInstance: () => ({ studyController: () => study, alert: text => alerts.push(text), openURL: url => openedSources.push(url) }) },
     MNPLFolders: { within: (p, r) => !r || p === r || p.startsWith(r + '/') },
@@ -67,7 +71,7 @@ function host() {
     vm.runInContext(fs.readFileSync(path.join(__dirname, '../src', file), 'utf8'), context);
   }
   const panel = context.MNPLPanel, c = panel.create('/plugin', { window: {} });
-  return { panel, c, study, docs, library, timers, alerts, saved, opened, openedSources, batchJobs, journalSettings, context,
+  return { panel, c, study, docs, library, timers, repeatingTimers, alerts, saved, opened, openedSources, batchJobs, journalSettings, context,
     reads: () => indexReads, loads: () => viewLoads, finishFolders: () => resolveFolders(library) };
 }
 
@@ -416,4 +420,25 @@ test('content has an independent solid container for host-managed root appearanc
   h.panel.toggle(h.c);
   assert.equal(h.c.view.superview, null);
   assert.deepEqual(h.alerts, []);
+});
+
+
+test('host fading is repaired while visible and appearance timer is cancelled on close/dispose', () => {
+  const h = host(); h.panel.toggle(h.c);
+  const timer = h.repeatingTimers[0];
+  Object.defineProperty(h.c.view, 'alpha', {
+    configurable: true, get() { return this.layer.opacity; }, set() {} // Host refuses the UIView setter.
+  });
+  h.c.view.layer.opacity = 0.25; h.c.view.userInteractionEnabled = false;
+  h.study.view.alpha = 0.6;
+  timer.action();
+  assert.equal(h.c.view.alpha, 1);
+  assert.equal(h.c.view.userInteractionEnabled, true);
+  assert.equal(h.study.view.alpha, 0.6);
+  h.panel.toggle(h.c); assert.equal(timer.valid, false);
+  h.c.view.layer.opacity = 0.25; timer.action(); assert.equal(h.c.view.alpha, 0.25);
+  h.panel.toggle(h.c); assert.equal(h.repeatingTimers.length, 2);
+  const next = h.repeatingTimers[1];
+  h.panel.dispose(h.c); assert.equal(next.valid, false);
+  h.c.view.layer.opacity = 0.25; next.action(); assert.equal(h.c.view.alpha, 0.25);
 });

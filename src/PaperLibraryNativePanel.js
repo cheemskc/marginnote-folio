@@ -189,7 +189,28 @@ var MNPLPanel = (function () {
       status(controller, "文件夹更新失败：" + String(error && error.message || error));
     });
   }
+  function stopAppearanceGuard(controller) {
+    if (controller.mnplAppearanceTimer) controller.mnplAppearanceTimer.invalidate();
+    controller.mnplAppearanceTimer = null;
+    controller.mnplAppearanceGeneration = (controller.mnplAppearanceGeneration || 0) + 1;
+  }
+  function startAppearanceGuard(controller) {
+    stopAppearanceGuard(controller);
+    // MarginNote can set floating addon roots to alpha=0.25 after its own
+    // compact/immersive layout. Restore only this visible addon, after that pass.
+    const generation = controller.mnplAppearanceGeneration;
+    const timer = NSTimer.scheduledTimerWithTimeInterval(0.2, true, function () {
+      if (controller.mnplDisposed || !controller.mnplVisible || controller.mnplAppearanceGeneration !== generation) return;
+      if (!controller.view.superview) return;
+      // On compact host layouts UIView.alpha can remain 0.25 even after its
+      // setter receives 1; direct CALayer.opacity restores the rendered surface.
+      if (controller.view.layer.opacity !== 1) controller.view.layer.opacity = 1;
+      if (!controller.view.userInteractionEnabled) controller.view.userInteractionEnabled = true;
+    });
+    controller.mnplAppearanceTimer = timer;
+  }
   function close(controller) {
+    stopAppearanceGuard(controller);
     MNPLDetail.capture(controller);
     stopBatch(controller);
     controller.mnplAutoLibraryStarted = false;
@@ -567,6 +588,7 @@ var MNPLPanel = (function () {
     attempt(function () {
       study.view.addSubview(c.view);
       c.mnplVisible = true;
+      startAppearanceGuard(c);
       layout(c);
       // Present native controls before indexing the library. No WebView startup.
       const generation = ++c.mnplGeneration;
@@ -583,6 +605,7 @@ var MNPLPanel = (function () {
     });
   }
   function dispose(c) {
+    stopAppearanceGuard(c);
     c.mnplDisposed = true; c.mnplGeneration += 1; c.mnplSearchGeneration += 1;
     stopBatch(c);
     MNPLOptions.close(c); MNPLSettings.close(c);
