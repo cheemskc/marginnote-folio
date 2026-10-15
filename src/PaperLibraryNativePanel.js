@@ -194,20 +194,25 @@ var MNPLPanel = (function () {
     controller.mnplAppearanceTimer = null;
     controller.mnplAppearanceGeneration = (controller.mnplAppearanceGeneration || 0) + 1;
   }
+  function restoreAppearance(controller) {
+    if (controller.mnplDisposed || !controller.mnplVisible || !controller.view.superview) return;
+    // UIView.alpha can remain at 0.25 despite setting it to 1 in compact host
+    // layouts. CALayer.opacity restores the actual rendered surface.
+    if (controller.view.layer.opacity !== 1) controller.view.layer.opacity = 1;
+    if (!controller.view.userInteractionEnabled) controller.view.userInteractionEnabled = true;
+  }
   function startAppearanceGuard(controller) {
     stopAppearanceGuard(controller);
-    // MarginNote can set floating addon roots to alpha=0.25 after its own
-    // compact/immersive layout. Restore only this visible addon, after that pass.
     const generation = controller.mnplAppearanceGeneration;
-    const timer = NSTimer.scheduledTimerWithTimeInterval(0.2, true, function () {
-      if (controller.mnplDisposed || !controller.mnplVisible || controller.mnplAppearanceGeneration !== generation) return;
-      if (!controller.view.superview) return;
-      // On compact host layouts UIView.alpha can remain 0.25 even after its
-      // setter receives 1; direct CALayer.opacity restores the rendered surface.
-      if (controller.view.layer.opacity !== 1) controller.view.layer.opacity = 1;
-      if (!controller.view.userInteractionEnabled) controller.view.userInteractionEnabled = true;
+    const timer = NSTimer.scheduledTimerWithTimeInterval(0.05, true, function () {
+      if (controller.mnplAppearanceGeneration !== generation) return;
+      restoreAppearance(controller);
     });
     controller.mnplAppearanceTimer = timer;
+    // scheduledTimer initially joins the default mode, which pauses during
+    // scrolling and live window resizing. Common modes keep this check running.
+    NSRunLoop.mainRunLoop().addTimerForMode(timer, "kCFRunLoopCommonModes");
+    restoreAppearance(controller);
   }
   function close(controller) {
     stopAppearanceGuard(controller);
@@ -352,7 +357,10 @@ var MNPLPanel = (function () {
       c.mnplReady = true;
       layoutContent(c);
     },
-    viewDidLayoutSubviews: function () { layoutContent(self); },
+    viewDidLayoutSubviews: function () { layoutContent(self); restoreAppearance(self); },
+    scrollViewWillBeginDragging: function () { restoreAppearance(self); },
+    scrollViewDidScroll: function () { restoreAppearance(self); },
+    scrollViewDidEndDecelerating: function () { restoreAppearance(self); },
     numberOfSectionsInTableView: function () { return 1; },
     tableViewNumberOfRowsInSection: function (table) {
       return table.tag === 3 ? (self.mnplSettingsFolderRows || []).length :
@@ -580,6 +588,7 @@ var MNPLPanel = (function () {
     c.view.alpha = 1;
     c.mnplSurface.backgroundColor = UIColor.whiteColor();
     layoutContent(c);
+    restoreAppearance(c);
   }
   function toggle(c) {
     if (c.mnplVisible) { close(c); return; }

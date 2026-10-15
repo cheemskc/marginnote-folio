@@ -8,11 +8,8 @@ JSB.require("PaperLibraryJournalService");
 JSB.require("PaperLibraryPaperData");
 JSB.require("PaperLibraryRelations");
 JSB.require("PaperLibraryBatchLookup");
-JSB.require("PaperLibraryNativeUI");
-JSB.require("PaperLibraryNativeDetail");
-JSB.require("PaperLibraryNativeOptions");
-JSB.require("PaperLibraryNativeSettings");
-JSB.require("PaperLibraryNativePanel");
+JSB.require("WebBridgeCommands");
+JSB.require("WebPanelController");
 JSB.require("PaperLibraryAddon");
 
 JSB.newAddon = function (mainPath) {

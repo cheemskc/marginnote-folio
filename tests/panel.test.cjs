@@ -41,6 +41,7 @@ function host() {
       const timer = { action, valid: true, invalidate() { this.valid = false; } };
       repeatingTimers.push(timer); return timer;
     } },
+    NSRunLoop: { mainRunLoop: () => ({ addTimerForMode(timer, mode) { timer.mode = mode; } }) },
     NSURL: { URLWithString: value => value },
     Application: { sharedInstance: () => ({ studyController: () => study, alert: text => alerts.push(text), openURL: url => openedSources.push(url) }) },
     MNPLFolders: { within: (p, r) => !r || p === r || p.startsWith(r + '/') },
@@ -441,4 +442,20 @@ test('host fading is repaired while visible and appearance timer is cancelled on
   const next = h.repeatingTimers[1];
   h.panel.dispose(h.c); assert.equal(next.valid, false);
   h.c.view.layer.opacity = 0.25; next.action(); assert.equal(h.c.view.alpha, 0.25);
+});
+
+
+test('appearance guard runs in common modes and restores opacity in scroll/layout callbacks', () => {
+  const h = host(); h.panel.toggle(h.c);
+  assert.equal(h.repeatingTimers[0].mode, 'kCFRunLoopCommonModes');
+  for (const callback of ['scrollViewWillBeginDragging', 'scrollViewDidScroll', 'scrollViewDidEndDecelerating', 'viewDidLayoutSubviews']) {
+    h.c.view.layer.opacity = 0.25;
+    h.c[callback](h.c.mnplPaperTable);
+    assert.equal(h.c.view.layer.opacity, 1, callback);
+  }
+  h.c.view.layer.opacity = 0.25; h.panel.layout(h.c);
+  assert.equal(h.c.view.layer.opacity, 1);
+  h.panel.toggle(h.c);
+  h.c.view.layer.opacity = 0.25; h.c.scrollViewDidScroll(h.c.mnplPaperTable);
+  assert.equal(h.c.view.layer.opacity, 0.25);
 });

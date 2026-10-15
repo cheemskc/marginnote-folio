@@ -14,11 +14,13 @@ fs.mkdirSync(packageDir, { recursive: true });
 for (const name of fs.readdirSync(path.join(root, "src"))) {
   if (!/\.js$|^mnaddon\.json$|^(?:icon|type-[a-z-]+)\.png$/.test(name)) continue;
   const source = path.join(root, "src", name);
-  if (name.endsWith(".js") && /UIWebView|WKWebView|evaluateJavaScript|web-dist/.test(fs.readFileSync(source, "utf8"))) {
-    throw new Error(`Native package must not include a WebView runtime: ${name}`);
-  }
+  if (name.startsWith("PaperLibraryNative") && name !== "PaperLibraryNativeValues.js") continue;
   fs.copyFileSync(source, path.join(packageDir, name));
 }
+execFileSync(process.execPath, [path.join(path.dirname(require.resolve("vite/package.json")), "bin/vite.js"), "build", "--config", "web/vite.config.js"], { cwd: root, stdio: "inherit" });
+const webDir = path.join(packageDir, "web-dist");
+fs.cpSync(path.join(output, "web-dist"), webDir, { recursive: true });
+fs.writeFileSync(path.join(webDir, "index.html"), '<!doctype html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Folio</title><link rel="stylesheet" href="assets/app.css"></head><body><div id="root"></div><script src="assets/app.iife.js"></script></body></html>');
 fs.rmSync(archive, { force: true });
 execFileSync("zip", ["-r", "-q", archive, "."], { cwd: packageDir, stdio: "inherit" });
-console.log(`Built native panel ${archive}`);
+console.log(`Built Folio WebView panel ${archive}`);
