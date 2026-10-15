@@ -558,7 +558,11 @@ var MNPLPanel = (function () {
     const study = studyFor(c);
     if (!study || !study.view) { Application.sharedInstance().alert("请先在 MarginNote 打开一个学习界面。"); return; }
     attempt(function () {
-      study.view.addSubview(c.view);
+      // Keep the panel outside the study subtree: immersive mode can fade
+      // that entire subtree, which child alpha/background overrides cannot undo.
+      // Use this study scene's window, never the application's global key window.
+      const host = study.view.window || study.view;
+      host.addSubview(c.view);
       c.mnplVisible = true;
       layout(c);
       // Present native controls before indexing the library. No WebView startup.

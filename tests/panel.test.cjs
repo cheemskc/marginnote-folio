@@ -400,3 +400,27 @@ test('panel remains opaque and inset in tablet, portrait and split-view windows'
   }
   assert.deepEqual(h.alerts, []);
 });
+
+
+test('panel is outside the fading study subtree and stays in its own scene window', () => {
+  const h = host();
+  const window = new h.context.UIView({ x: 0, y: 0, width: 1024, height: 1366 });
+  window.alpha = 1;
+  window.addSubview(h.study.view); h.study.view.window = window;
+  h.study.view.alpha = 0.2;
+  h.panel.toggle(h.c);
+  assert.equal(h.c.view.superview, window);
+  assert.ok(!h.study.view.subviews.includes(h.c.view));
+  assert.equal(h.c.view.alpha * h.c.view.superview.alpha, 1);
+  assert.equal(h.study.view.alpha, 0.2);
+  h.study.view.alpha = 0; h.panel.layout(h.c);
+  assert.equal(h.c.view.alpha * h.c.view.superview.alpha, 1);
+  window.frame = { x: 0, y: 0, width: 1366, height: 1024 };
+  h.panel.layout(h.c);
+  assert.equal(h.c.view.frame.x * 2 + h.c.view.frame.width, 1366);
+  h.panel.toggle(h.c);
+  assert.ok(!window.subviews.includes(h.c.view));
+  h.panel.toggle(h.c); h.panel.dispose(h.c);
+  assert.ok(!window.subviews.includes(h.c.view));
+  assert.deepEqual(h.alerts, []);
+});
