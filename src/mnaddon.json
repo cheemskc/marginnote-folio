@@ -2,7 +2,7 @@
   "addonid": "com.azeedel.marginnote.paper-library",
   "author": "azeedel",
   "title": "Folio",
-  "version": "0.11.0",
+  "version": "0.11.1",
   "marginnote_version_min": "4.2.3",
   "cert_key": ""
 }

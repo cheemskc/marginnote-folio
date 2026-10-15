@@ -1,13 +1,13 @@
 # Folio for MarginNote
 
-MarginNote 4 文献管理面板。当前版本 **0.11.0**。
+MarginNote 4 文献管理面板。当前版本 **0.11.1**。
 
 [下载最新版](https://github.com/cheemskc/marginnote-folio/releases/latest)
 
 - 选择 MarginNote 内的文件夹作为文献库，包含子文件夹与嵌套目录。
 - 紧凑文献条目：类型图标、单行标题、期刊分区与影响因子、作者、年份、来源、星标和打开。
 - 文献详情：摘要、书目字段、编辑保存、参考文献与引文列表和来源链接。
-- 搜索、多选筛选、排序；目录宽度可调整，左右栏可收起。
+- 搜索、多选筛选、排序；左右栏宽度均可拖动调整，也可收起。
 - 独立设置界面集中管理文件夹、Crossref / OpenAlex / easyScholar、密钥及批量补全。
 - 面板四角支持拖动调整大小；窄面板切换列表与详情视图。
 
@@ -29,7 +29,7 @@ npm test
 npm run build
 ```
 
-安装包输出到 `build/marginnote-folio-v0.11.0.mnaddon`。原生脚本位于 `src/`，页面源文件位于 `web/`，构建产物在 `build/`。
+安装包输出到 `build/marginnote-folio-v0.11.1.mnaddon`。原生脚本位于 `src/`，页面源文件位于 `web/`，构建产物在 `build/`。
 
 ## 验证范围
 

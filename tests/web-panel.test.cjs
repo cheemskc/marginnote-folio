@@ -32,11 +32,11 @@ test('web panel intercepts only allowed commands and serializes replies safely',
 });
 
 
-test('all four corners resize the system panel without resetting a chosen size',()=>{
+test('all four corners resize without amplifying movement or resetting a chosen size',()=>{
  const h=host();h.panel.toggle(h.c);assert.equal(h.c.mnplResizeHandles.length,4);
  h.c.resizeSE({state:1,translationInView:()=>({x:0,y:0})});
- h.c.resizeSE({state:2,translationInView:()=>({x:-100,y:-50})});
- assert.equal(h.c.preferredContentSize.width,760);assert.equal(h.c.preferredContentSize.height,604);
- h.panel.layout(h.c);assert.equal(h.c.preferredContentSize.width,760);
- h.c.resizeSE({state:3,translationInView:()=>({x:-100,y:-50})});assert.equal(h.c.mnplResizeStart,null);
+ h.c.resizeSE({state:2,translationInView:view=>{assert.equal(view,h.study.view);return {x:-100,y:-50};}});
+ assert.equal(h.c.preferredContentSize.width,860);assert.equal(h.c.preferredContentSize.height,654);
+ h.panel.layout(h.c);assert.equal(h.c.preferredContentSize.width,860);
+ h.c.resizeSE({state:3,translationInView:view=>{assert.equal(view,h.study.view);return {x:-100,y:-50};}});assert.equal(h.c.mnplResizeStart,null);
 });

@@ -6,9 +6,11 @@ var MNPLPanel = (function () {
     c.webView.evaluateJavaScript("window.__MNPLBridgeReceive&&window.__MNPLBridgeReceive("+JSON.stringify(JSON.stringify(response))+")",function(){});
   }
   function resize(c,g,sx,sy){
-    const p=g.translationInView(c.view);
+    const study=c.addon.window&&Application.sharedInstance().studyController(c.addon.window);
+    // Measure against the stationary host, without amplifying pointer movement.
+    const p=g.translationInView(study&&study.view||c.view);
     if(g.state===1 || !c.mnplResizeStart)c.mnplResizeStart={width:c.mnplSurface.bounds.width,height:c.mnplSurface.bounds.height};
-    c.mnplUserSize={width:Math.max(360,c.mnplResizeStart.width+sx*p.x*2),height:Math.max(420,c.mnplResizeStart.height+sy*p.y*2)};
+    c.mnplUserSize={width:Math.max(360,c.mnplResizeStart.width+sx*p.x),height:Math.max(420,c.mnplResizeStart.height+sy*p.y)};
     layout(c);
     if(g.state===3 || g.state===4 || g.state===5)c.mnplResizeStart=null;
   }
